@@ -23,28 +23,28 @@ test.describe('Add to Cart from Dashboard @user', () => {
 
   // ── Test Cases ─────────────────────────────────────────────
   test('Keranjang untuk produk top 1', async ({ page }) => {
-    const productCard = '[id=btn-top-produk-0]';
+    const productCard = '[id="btn-top-produk-0"]';
 
     await page.locator(productCard).first().click();
     await expect(page.getByText('Product added to cart')).toBeVisible();
   })
 
   test('Keranjang untuk produk top 2', async ({ page }) => {
-    const productCard = '[id=btn-top-produk-1]';
+    const productCard = '[id="btn-top-produk-1"]';
 
     await page.locator(productCard).first().click();
     await expect(page.getByText('Product added to cart')).toBeVisible();
   })
 
     test('Keranjang untuk produk top 3', async ({ page }) => {
-    const productCard = '[id=btn-top-produk-2]';
+    const productCard = '[id="btn-top-produk-2"]';
 
     await page.locator(productCard).first().click();
     await expect(page.getByText('Product added to cart')).toBeVisible();
   })
 
     test('Keranjang untuk produk top 4', async ({ page }) => {
-    const productCard = '[id=btn-top-produk-3]';
+    const productCard = '[id="btn-top-produk-3"]';
 
     await page.locator(productCard).first().click();
     await expect(page.getByText('Product added to cart')).toBeVisible();
