@@ -5,14 +5,15 @@ const { loginUser } = require('../../helpers/loginUser');
 const { withdrawUser } = require('../../helpers/withdrawUser');
 
 // ----------------------------------------------------------
-// GROUP: Alur Login
+// GROUP: Alur Withdraw
 // ----------------------------------------------------------
-test.describe('Verifikasi Alur Deposit', () => {
+test.describe('Verifikasi Alur Withdraw', () => {
 
    // --------------------------------------------------------
-   // TEST: Login User
+   // TEST: Withdraw User
    // --------------------------------------------------------
-   test('login sebagai User harus redirect ke /dashboard @user', async ({ page }) => {
+   test('Withdraw User @user', async ({ page }) => {
+      test.setTimeout(300_000); // 5 menit — butuh input OTP manual
       await loginUser(page);
 
       // Verifikasi URL tepat setelah login

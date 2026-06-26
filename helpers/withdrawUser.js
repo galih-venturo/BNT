@@ -1,16 +1,3 @@
-// helpers/loginUser.js
-// ============================================================
-// Helper Login USER untuk BNT Global Automation Testing
-// ============================================================
-// Cara pakai:
-//   const { loginUser } = require('../helpers/loginUser');
-//   await loginUser(page);
-//
-// Prasyarat:
-//   - File .env harus berisi USER_EMAIL dan USER_PASSWORD
-//   - dotenv sudah dimuat di playwright.config.js
-// ============================================================
-
 'use strict';
 
 // ----------------------------------------------------------
@@ -22,27 +9,35 @@ const URL = {
   DASHBOARD: `${process.env.BASE_URL || 'https://test.bnt-global.com'}/dashboard`,
 };
 
+import { withdrawAddBankUser } from './withdrawAddBankUser';
+
 const SELECTOR = {
-  /** Tombol "Masuk" di halaman utama (navbar/hero) */
+  /** Tombol "Withdraw" di halaman dashboard */
   BTN_REDIRECT_WITHDRAW: '[data-testid="dashboard-button-btn-dashboard-4"]',
 
-  /** Tombol "Masuk" di halaman utama (navbar/hero) */
-  BTN_WITHDRAW: '[data-testid=" -button-btn-dashboard-4"]',
+  /** Tombol "Tambah Withdraw" di halaman riwayat withdraw */
+  BTN_TAMBAH_WITHDRAW: '[data-testid="riwayat-withdraw-button-withdraw"]',
+
+  /** Select Akun Bank di halaman riwayat withdraw */
+  SLCT_AKUN_BANK: '[id="select-bank-trigger-placeholder-new"]',
+
+  /** Input Search Akun Bank di halaman riwayat withdraw */
+  SEARCH_AKUN_BANK: '[id="select-bank-input-search"]',
+
+  /** Item Bank di halaman riwayat withdraw */
+  ITEM_BANK: '[data-testid="select-bank-list-item"]',
 
   /** Input nominal withdraw pada form withdraw */
-  INPUT_NOMINAL: '[data-testid="component-withdraw-input-nominal"]',
+  INPUT_NOMINAL: '[data-testid="withdraw-input-jumlah_penarikan"]',
 
-  /** Input nominal withdraw pada form withdraw */
-  BTN_SUBMIT_DEPOSIT: '[data-testid="component-withdraw-button-btn-component-withdraw-1"]',
+  /** Input OTP pada form withdraw */
+  INPUT_OTP: '[data-testid="withdraw-input-13"]',
 
-  /** Input nominal withdraw pada form withdraw */
-  BTN_TRANSFER_BANK: '[data-testid="component-withdraw-button-btn-component-withdraw-4"]',
+  /** Tombol "Lanjutkan" pada form withdraw */
+  BTN_LANJUTKAN: '[data-testid="withdraw-button-btn-withdraw-3"]',
 
-  /** Input nominal withdraw pada form withdraw */
-  BTN_SUMIT_TRANSFER: '[data-testid="component-withdraw-button-btn-component-withdraw-6"]',
-
-  /** Input nominal withdraw pada form withdraw */
-  BTN_UNGGAH_BUKTI_TF: '[data-testid="component-withdraw-button-btn-component-withdraw-9"]',
+  /** Tombol "Konfirmasi" pada form withdraw */
+  BTN_KONFIRMASI: '[data-testid="withdraw-button-btn-withdraw-12"]',
 };
 
 // ----------------------------------------------------------
@@ -100,38 +95,80 @@ async function withdrawUser(page) {
   // Pastikan tombol terlihat sebelum diklik
   await btnRedirectWithdraw.waitFor({ state: 'visible' });
   await btnRedirectWithdraw.click();
-
   console.log('[withdrawUser] Mengklik tombol redirect withdraw "Withdraw"...');
 
+  const btnTambahWithdraw = page.locator(SELECTOR.BTN_TAMBAH_WITHDRAW).first();
+  // Pastikan tombol terlihat sebelum diklik
+  await btnTambahWithdraw.waitFor({ state: 'visible' });
+  await btnTambahWithdraw.click();
+  console.log('[withdrawUser] Mengklik tombol tambah withdraw "Tambah Withdraw"...');
+
+  const randomDigits = Math.floor(Math.random() * 7) + 10; // 10–16 digit
+  let bankName = 'BCA';
+  let accountName = 'Galih Satrio Wibisono';
+  let accountNumber = Array.from({ length: randomDigits }, () => Math.floor(Math.random() * 10)).join('');
+
+  // Cek apakah sudah ada akun bank terdaftar
+  // Jika placeholder visible → list kosong → buat akun baru dulu
+  const triggerPlaceholder = page.locator('[id="select-bank-trigger-placeholder-new"]').first();
+  const hasNoAccount = await triggerPlaceholder.isVisible().catch(() => false);
+
+  if (hasNoAccount) {
+    console.log('[withdrawUser] Tidak ada akun bank, membuat akun baru...');
+    await withdrawAddBankUser(page, bankName, accountName, accountNumber);
+
+    // Tunggu redirect kembali ke halaman withdraw utama
+    await page.waitForTimeout(3000);
+    await page.waitForLoadState('networkidle');
+  } else {
+    console.log('[withdrawUser] Akun bank sudah ada, langsung pilih...');
+  }
+
+  const slctAkunBank = page.locator(SELECTOR.SLCT_AKUN_BANK).first();
+  // Pastikan tombol terlihat sebelum diklik
+  await slctAkunBank.waitFor({ state: 'visible' });
+  await slctAkunBank.click();
+  console.log('[withdrawUser] Membuka popup pilih bank');
+
+  const searchAkunBank = page.locator(SELECTOR.SEARCH_AKUN_BANK).first();
+  // Pastikan tombol terlihat sebelum diklik
+  await searchAkunBank.waitFor({ state: 'visible' });
+  await searchAkunBank.click();
+  await searchAkunBank.pressSequentially(bankName)
+  console.log('[withdrawUser] Mencari Bank');
+
+  await page.waitForTimeout(3000);
+  // Pastikan tombol terlihat sebelum diklik
+  const itemBank = page.locator(SELECTOR.ITEM_BANK).first();
+  await itemBank.waitFor({ state: 'visible' });
+  await itemBank.click();
+  console.log('[withdrawUser] Memilih Bank');
+
   const inputNominal = page.locator(SELECTOR.INPUT_NOMINAL).first();
+  // Pastikan tombol terlihat sebelum diklik
   await inputNominal.waitFor({ state: 'visible' });
-  // await inputNominal.click();
-  await inputNominal.fill("100000");
-  console.log('[withdrawUser] Mengisi nominal withdraw"...');
+  await inputNominal.click();
+  await inputNominal.pressSequentially('100000')
+  console.log('[withdrawUser] Memasukkan Nominal');
 
-  const btnSubmitWithdraw = page.locator(SELECTOR.BTN_SUBMIT_DEPOSIT).first();
+  const btnLanjutkan = page.locator(SELECTOR.BTN_LANJUTKAN).first();
   // Pastikan tombol terlihat sebelum diklik
-  await btnSubmitWithdraw.waitFor({ state: 'visible' });
-  await btnSubmitWithdraw.click();
-  console.log('[withdrawUser] Klik submit withdraw dan membuka modal metode pembayaran"...');
+  await btnLanjutkan.waitFor({ state: 'visible' });
+  await btnLanjutkan.click();
+  console.log('[withdrawUser] Mengklik tombol lanjutkan');
 
-  const btnTransferBank = page.locator(SELECTOR.BTN_TRANSFER_BANK).first();
-  // Pastikan tombol terlihat sebelum diklik
-  await btnTransferBank.waitFor({ state: 'visible' });
-  await btnTransferBank.click();
-  console.log('[withdrawUser] Klik metode pembayaran "Transfer Bank"...');
+  // Pause test — isi OTP manual di browser, lalu klik Resume di Playwright Inspector
+  console.log('[withdrawUser] Silakan isi OTP di browser, lalu klik Resume di Playwright Inspector...');
+  await page.pause();
+  console.log('[withdrawUser] Melanjutkan setelah OTP diisi...');
 
-  const btnSubmitProsesTransfer = page.locator(SELECTOR.BTN_SUMIT_TRANSFER).first();
+  const btnKonfirmasi = page.locator(SELECTOR.BTN_KONFIRMASI).first();
   // Pastikan tombol terlihat sebelum diklik
-  await btnSubmitProsesTransfer.waitFor({ state: 'visible' });
-  await btnSubmitProsesTransfer.click();
-  console.log('[withdrawUser] Melakukan klik submit proses transfer "Proses Transfer"...');
+  await btnKonfirmasi.waitFor({ state: 'visible' });
+  await btnKonfirmasi.click();
+  console.log('[withdrawUser] Mengklik tombol konfirmasi');
 
-  const bntUploadBuktiTf = page.locator(SELECTOR.BTN_UNGGAH_BUKTI_TF).first();
-  // Pastikan tombol terlihat sebelum diklik
-  await bntUploadBuktiTf.waitFor({ state: 'visible' });
-  await bntUploadBuktiTf.click();
-  console.log('[withdrawUser] Melakukan klik tombol unggah bukti transfer "Unggah Bukti Transfer"...');
+  await page.waitForTimeout(5000);
 }
 
 // ----------------------------------------------------------
