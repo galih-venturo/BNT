@@ -2,13 +2,12 @@
 
 const { test, expect } = require('@playwright/test');
 const { loginUser } = require('../../helpers/loginUser');
-const { depositUser } = require('../../helpers/depositUser');
-const { depositKosongUser } = require('../../helpers/depositKosongUser');
+const { editAlamatKtp } = require('../../helpers/editAlamatKtp');
 
 // ----------------------------------------------------------
-// GROUP: Alur Login
+// GROUP: Alur Edit Alamat KTP
 // ----------------------------------------------------------
-test.describe('Alur Daftar Alamat', () => {
+test.describe('Alur Edit Alamat KTP', () => {
 
    // --------------------------------------------------------
    // TEST: Login User
@@ -21,8 +20,7 @@ test.describe('Alur Daftar Alamat', () => {
 
       await page.waitForTimeout(2000); // Tunggu 2 detik untuk memastikan halaman sudah stabil
 
-      await depositUser(page);
-      await depositKosongUser(page);
+      await editAlamatKtp(page);
 
    });
 
